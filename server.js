@@ -11,7 +11,10 @@ const username = 'ArnabRC';
 const password = encodeURIComponent('A_RC@kol-90');
 const dbName = 'mongoclientbooks';
 const collectionName = 'books';
-const connectionString = `mongodb+srv://${username}:${password}@cluster0-oguj3.mongodb.net/${dbName}?retryWrites=true&w=majority`;
+// Connection string for MondoDB Cloud
+// const connectionString = `mongodb+srv://${username}:${password}@cluster0-oguj3.mongodb.net/${dbName}?retryWrites=true&w=majority`;
+// Connection string for MondoDB Local
+const connectionString = `mongodb://localhost:27017/${dbName}`;
 const port = 1234;
 
 MongoClient.connect(connectionString, (err, db) => {
@@ -20,69 +23,12 @@ MongoClient.connect(connectionString, (err, db) => {
 
     console.log('Database connected');
 
-    app.listen(port, () => {
-        console.log(`app working on ${port}`);
-    });
+    const dbase = db.db(dbName);
 
-    let dbase = db.db(dbName);
+    const books = require('./book')(app, dbase, collectionName, ObjectID);
 
-    app.post('/books/create', (req, res, next) => {
+});
 
-        let name = {
-            name: req.body.name,
-            price: req.body.price
-        };
-
-        dbase.collection(collectionName).save(name, (err, result) => {
-            if (err) {
-                console.log(err);
-            }
-            res.send('Book added successfully');
-        });
-
-    });
-
-    app.get('/books/read', (req, res, next) => {
-        dbase.collection(collectionName).find().toArray((err, results) => {
-            res.send(results);
-        });
-    });
-
-    app.get('/books/read/:id', (req, res, next) => {
-        if (err) {
-            throw err;
-        }
-        let id = ObjectID(req.params.id);
-        dbase.collection(collectionName).find(id).toArray((err, result) => {
-            if (err) {
-                throw err;
-            }
-            res.send(result);
-        });
-    });
-
-    app.put('/books/update/:id', (req, res, next) => {
-        var id = {
-            _id: new ObjectID(req.params.id)
-        };
-
-        dbase.collection(collectionName).update(id, { $set: { name: req.body.name, price: req.body.price } }, (err, result) => {
-            if (err) {
-                throw err;
-            }
-            res.send('Book updated sucessfully');
-        });
-    });
-
-    app.delete('/books/delete/:id', (req, res, next) => {
-        let id = ObjectID(req.params.id);
-
-        dbase.collection(collectionName).deleteOne({ _id: id }, (err, result) => {
-            if (err) {
-                throw err;
-            }
-            res.send('Book deleted sucessfully');
-        });
-    });
-
+app.listen(port, () => {
+    console.log(`app working on ${port}`);
 });
